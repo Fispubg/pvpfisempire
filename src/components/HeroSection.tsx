@@ -25,7 +25,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tight leading-tight">
-            The Fis Empire:
+            FisPvP:
             <br />
             <span className="text-primary text-glow">Built for Greatness</span>
           </h1>
@@ -37,7 +37,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mt-6 text-lg sm:text-xl text-muted-foreground font-body max-w-2xl mx-auto"
         >
-          The official home for PrimeFis fans and the FisPvP competitive arena.
+          The official hub for FisPvP.
         </motion.p>
 
         <motion.div
