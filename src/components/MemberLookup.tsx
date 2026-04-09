@@ -11,7 +11,7 @@ const SKILL_CATEGORIES = {
 
 const emptySkills = {
   weapons: [0, 0, 0, 0, 0, 0, 0],
-  tyrant: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  tyrant: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   survivor: [0, 0, 0, 0, 0],
   mechanics: [0, 0, 0, 0, 0],
 };
@@ -21,20 +21,21 @@ const calculateTotalPoints = (skills: any) => {
   return Object.values(skills).flat().reduce((a: any, b: any) => a + (Number(b) || 0), 0);
 };
 
-const SkillBar = ({ value, max }: { value: number; max: number }) => {
+// FIXED SKILLBAR COMPONENT
+const SkillBar = ({ value, max, isUnknown }: { value: number; max: number; isUnknown: boolean }) => {
   const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
       <motion.div 
-        key={value} // Forces re-animation on new search
         initial={{ width: 0 }} 
         animate={{ width: `${percentage}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
+        transition={{ duration: 1, ease: "circOut", delay: 0.2 }}
         className="h-full" 
         style={{ 
-          backgroundColor: 'var(--primary, #ff00ff)', // Pink fallback if var is missing
-          boxShadow: '0 0 10px var(--primary, #ff00ff)' 
+          // Forced fallback color if var fails. Replace #a855f7 with your actual primary hex if different.
+          backgroundColor: isUnknown ? '#374151' : 'var(--primary, #a855f7)', 
+          boxShadow: isUnknown ? 'none' : '0 0 12px var(--primary, #a855f7)'
         }} 
       />
     </div>
@@ -69,7 +70,7 @@ const MemberLookup = () => {
     const searchKey = query.toLowerCase().trim();
     
     const foundIdx = allPlayers.findIndex(p => 
-      p.name.toLowerCase() === searchKey || (p.mcName && p.mcName.toLowerCase() === searchKey)
+      p.name?.toLowerCase() === searchKey || (p.mcName && p.mcName.toLowerCase() === searchKey)
     );
 
     if (foundIdx !== -1) {
@@ -110,7 +111,13 @@ const MemberLookup = () => {
 
         <AnimatePresence mode="wait">
           {searched && result && (
-            <motion.div key={result.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+            <motion.div 
+              key={result.name + result.rank} // Key change triggers fresh animations
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#111111] rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+            >
               <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="flex flex-col items-center justify-center p-6 bg-white/[0.03] rounded-3xl border border-white/5 relative">
                   <img src={`https://mc-heads.net/body/${result.mcName || result.name}/right`} className={`h-80 object-contain drop-shadow-2xl transition-all duration-500 ${isUnknown ? 'grayscale opacity-50' : ''}`} alt="Skin" />
@@ -127,14 +134,14 @@ const MemberLookup = () => {
                     </div>
                     <div className="text-center p-3 bg-white/5 rounded-xl border border-white/5">
                       <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Status</p>
-                      <p className="text-[10px] font-black text-white uppercase truncate mt-1">{isUnknown ? "UNKNOWN" : "VERIFIED"}</p>
+                      <p className="text-[10px] font-black text-white uppercase mt-1">{isUnknown ? "UNKNOWN" : "VERIFIED"}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4 max-h-[550px] overflow-y-auto pr-4 custom-scrollbar text-left">
                   {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
-                    const scores = result.skills?.[key] || [];
+                    const scores = result.skills?.[key] || emptySkills[key as keyof typeof emptySkills];
                     const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: any) => a + (Number(b) || 0), 0) : 0;
                     return (
                       <div key={key} className="p-5 bg-white/5 rounded-2xl border border-white/5">
@@ -154,7 +161,7 @@ const MemberLookup = () => {
                                   <span>{s.name}</span>
                                   <span>{score}/{s.max}</span>
                                 </div>
-                                <SkillBar value={score} max={s.max} />
+                                <SkillBar value={score} max={s.max} isUnknown={isUnknown} />
                               </div>
                             );
                           })}
