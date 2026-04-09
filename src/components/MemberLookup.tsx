@@ -21,23 +21,11 @@ const calculateTotalPoints = (skills: any) => {
   return Object.values(skills).flat().reduce((a: any, b: any) => a + (Number(b) || 0), 0);
 };
 
-// FIXED SKILLBAR COMPONENT
-const SkillBar = ({ value, max, isUnknown }: { value: number; max: number; isUnknown: boolean }) => {
-  const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  
+const SkillBar = ({ value, max }: { value: number; max: number }) => {
+  const percentage = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-      <motion.div 
-        initial={{ width: 0 }} 
-        animate={{ width: `${percentage}%` }}
-        transition={{ duration: 1, ease: "circOut", delay: 0.2 }}
-        className="h-full" 
-        style={{ 
-          // Forced fallback color if var fails. Replace #a855f7 with your actual primary hex if different.
-          backgroundColor: isUnknown ? '#374151' : 'var(--primary, #a855f7)', 
-          boxShadow: isUnknown ? 'none' : '0 0 12px var(--primary, #a855f7)'
-        }} 
-      />
+      <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" />
     </div>
   );
 };
