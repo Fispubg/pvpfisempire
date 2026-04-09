@@ -44,10 +44,22 @@ const findBestSkill = (playerSkills: any) => {
 };
 
 const SkillBar = ({ value, max }: { value: number; max: number }) => {
-  const percentage = Math.min((value / max) * 100, 100);
+  // Ensure we don't divide by zero and clamp between 0-100
+  const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" style={{ backgroundColor: 'var(--primary)' }} />
+      <motion.div 
+        initial={{ width: 0 }} 
+        // Using layout effects to ensure animation triggers when dropdown opens
+        animate={{ width: `${percentage}%` }} 
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="h-full bg-blue-500" // Fallback color if var(--primary) fails
+        style={{ 
+          backgroundColor: 'var(--primary, #3b82f6)', // Added fallback hex
+          boxShadow: '0 0 8px var(--primary, #3b82f6)' // Optional: adds a slight glow to the bar
+        }} 
+      />
     </div>
   );
 };
