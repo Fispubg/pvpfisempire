@@ -28,8 +28,11 @@ const SkillBar = ({ value, max }: { value: number; max: number }) => {
       <motion.div 
         initial={{ width: 0 }} 
         animate={{ width: `${percentage}%` }} 
-        className="h-full bg-primary shadow-[0_0_8px_rgba(255,0,255,0.4)]" 
-        style={{ backgroundColor: 'var(--primary)' }}
+        className="h-full bg-primary" 
+        style={{ 
+          backgroundColor: 'var(--primary)', 
+          boxShadow: '0 0 8px var(--primary)' 
+        }} 
       />
     </div>
   );
@@ -42,14 +45,15 @@ const MemberLookup = () => {
   const [isUnknown, setIsUnknown] = useState(false);
   const [allPlayers, setAllPlayers] = useState<any[]>([]);
 
-  // Fetch data once on load to search through it
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev/");
         const data = await response.json();
-        // Sort data by total points to determine rank
-        const sorted = data.sort((a: any, b: any) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills));
+        // Sort to establish ranking order
+        const sorted = Array.isArray(data) 
+          ? data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills)) 
+          : [];
         setAllPlayers(sorted);
       } catch (e) {
         console.error("Lookup fetch failed", e);
@@ -62,7 +66,6 @@ const MemberLookup = () => {
     if (!query.trim()) return;
     const searchKey = query.toLowerCase().trim();
     
-    // Find player by name or mcName in the live database
     const foundIdx = allPlayers.findIndex(p => 
       p.name.toLowerCase() === searchKey || (p.mcName && p.mcName.toLowerCase() === searchKey)
     );
@@ -70,7 +73,7 @@ const MemberLookup = () => {
     if (foundIdx !== -1) {
       setResult({
         ...allPlayers[foundIdx],
-        rank: foundIdx + 1 // Real time rank based on database
+        rank: foundIdx + 1
       });
       setIsUnknown(false);
     } else {
@@ -120,7 +123,7 @@ const MemberLookup = () => {
                   <img src={`https://mc-heads.net/body/${result.mcName || result.name}/right`} className={`h-80 object-contain drop-shadow-2xl transition-all duration-500 ${isUnknown ? 'grayscale opacity-50' : ''}`} alt="Skin" />
                   <h3 className={`mt-6 font-black italic text-3xl uppercase tracking-tighter ${isUnknown ? 'text-gray-500' : 'text-white'}`}>{result.name}</h3>
                   
-                  <div className="grid grid-cols-3 gap-3 w-full mt-6">
+                  <div className="grid grid-cols-3 gap-3 w-full mt-6 text-left">
                     <div className="text-center p-3 bg-white/5 rounded-xl border border-white/5">
                       <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Total Points</p>
                       <p className="text-lg font-black italic" style={{ color: 'var(--primary)' }}>{isUnknown ? "0" : calculateTotalPoints(result.skills).toLocaleString()}</p>
@@ -144,21 +147,24 @@ const MemberLookup = () => {
                       <div key={key} className="p-5 bg-white/5 rounded-2xl border border-white/5">
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
-                            <cat.icon className={`w-4 h-4 ${isUnknown ? 'text-gray-600' : 'text-primary'}`} style={{ color: !isUnknown ? 'var(--primary)' : '' }} />
+                            <cat.icon className="w-4 h-4 text-primary" style={{ color: !isUnknown ? 'var(--primary)' : '#4b5563' }} />
                             <span className={`text-xs font-black uppercase tracking-widest ${isUnknown ? 'text-gray-600' : 'text-white'}`}>{cat.label}</span>
                           </div>
-                          <span className="text-[10px] font-black text-gray-500 italic">{catTotal}/{cat.total}</span>
+                          <span className="text-[10px] font-black text-primary italic" style={{ color: 'var(--primary)' }}>{catTotal}/{cat.total}</span>
                         </div>
                         <div className="space-y-3">
-                          {cat.skills.map((s, i) => (
-                            <div key={s.name}>
-                              <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
-                                <span>{s.name}</span>
-                                <span>{isUnknown ? "0" : (scores[i] || 0)}/{s.max}</span>
+                          {cat.skills.map((s, i) => {
+                            const score = Number(scores[i]) || 0;
+                            return (
+                              <div key={s.name}>
+                                <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
+                                  <span>{s.name}</span>
+                                  <span>{score}/{s.max}</span>
+                                </div>
+                                <SkillBar value={score} max={s.max} />
                               </div>
-                              <SkillBar value={isUnknown ? 0 : (Number(scores[i]) || 0)} max={s.max} />
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     );
