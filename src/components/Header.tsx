@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import fisLogo from "@/assets/fis-logo.png";
 
 const navLinks = [
-  { label: "Home", href: "#home" },
+  { label: "Home", href: "https://fis-empire.pages.dev", isExternal: true },
   { label: "Leaderboard", href: "#leaderboard" },
   { label: "Socials", href: "#socials" },
   // Updated this line to point to your Discord link
