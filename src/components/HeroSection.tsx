@@ -47,12 +47,12 @@ const HeroSection = () => {
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
-            href="https://discord.gg/M6bfSgh3sw"
+            href="https://discord.gg/zAS2jAbGHy"
             target="_blank"
             rel="noopener noreferrer"
             className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-display text-sm font-bold uppercase tracking-wider glow-magenta hover:scale-105 transition-transform duration-200 animate-pulse-glow"
           >
-            Join the Empire
+            Join FisPvP
           </a>
           <a
             href="#leaderboard"
