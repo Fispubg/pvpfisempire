@@ -52,7 +52,7 @@ const Leaderboard = () => {
     const fetchLeaderboard = async () => {
       try {
         // REPLACE THIS URL WITH YOUR CLOUDFLARE WORKER URL
-        const response = await fetch("https://fis-api.YOUR_SUBDOMAIN.workers.dev");
+        const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev");
         const data = await response.json();
 
         // Convert object to array and sort by total points if necessary
