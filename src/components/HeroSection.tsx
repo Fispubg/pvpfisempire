@@ -54,12 +54,6 @@ const HeroSection = () => {
           >
             Join FisPvP
           </a>
-          <a
-            href="#leaderboard"
-            className="px-8 py-3 rounded-lg border border-primary/50 text-primary font-display text-sm font-bold uppercase tracking-wider hover:bg-primary/10 transition-colors duration-200"
-          >
-            View Rankings
-          </a>
         </motion.div>
       </div>
 
