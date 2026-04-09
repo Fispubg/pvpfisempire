@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Trophy, Globe, Sword, Shield, Cpu, Wind } from "lucide-react";
-import fispvpLogo from "@/assets/fispvp-logo.jpg";
+
+// I'm using a placeholder for the logo so the code CANNOT crash on import
+const LOGO_URL = "https://mc-heads.net/avatar/PrimeFis/100"; 
 
 const SKILL_CATEGORIES = {
   weapons: { label: "Weapons", icon: Sword, skills: [{ name: "Mace", max: 20 }, { name: "Sword", max: 15 }, { name: "Axe", max: 10 }, { name: "Cart", max: 15 }, { name: "Crystals/Anchor", max: 20 }, { name: "Trident", max: 10 }, { name: "Spear", max: 15 }], total: 105 },
@@ -10,32 +12,31 @@ const SKILL_CATEGORIES = {
   mechanics: { label: "Mechanics Skill", icon: Cpu, skills: [{ name: "Redstone", max: 30 }, { name: "Building", max: 20 }, { name: "Farms", max: 15 }, { name: "Base Game Mechanics", max: 20 }, { name: "F3 Menu", max: 15 }], total: 100 },
 };
 
+// SAFETY: Added checks to ensure 'skills' exists before totaling
 const calculateTotalPoints = (skills: any) => {
   if (!skills) return 0;
   let total = 0;
-  const categories = ['weapons', 'tyrant', 'survivor', 'mechanics'];
-  categories.forEach(cat => {
-    const catArray = skills[cat];
-    if (Array.isArray(catArray)) {
-      total += catArray.reduce((a: number, b: any) => a + (Number(b) || 0), 0);
+  ['weapons', 'tyrant', 'survivor', 'mechanics'].forEach(cat => {
+    const arr = skills[cat];
+    if (Array.isArray(arr)) {
+      total += arr.reduce((a: number, b: any) => a + (Number(b) || 0), 0);
     }
   });
   return total;
 };
 
 const findBestSkill = (playerSkills: any) => {
-  if (!playerSkills) return "N/A";
+  if (!playerSkills) return "Warrior";
   let maxVal = -1;
   let bestName = "PvP";
   Object.keys(SKILL_CATEGORIES).forEach((catKey) => {
-    const categoryInfo = SKILL_CATEGORIES[catKey as keyof typeof SKILL_CATEGORIES];
+    const info = SKILL_CATEGORIES[catKey as keyof typeof SKILL_CATEGORIES];
     const scores = playerSkills[catKey];
     if (Array.isArray(scores)) {
-      scores.forEach((val: any, idx: number) => {
-        const numVal = Number(val) || 0;
-        if (numVal > maxVal) {
-          maxVal = numVal;
-          bestName = categoryInfo.skills[idx]?.name || "PvP";
+      scores.forEach((val, i) => {
+        if (Number(val) > maxVal) {
+          maxVal = Number(val);
+          bestName = info.skills[i]?.name || "PvP";
         }
       });
     }
@@ -43,146 +44,113 @@ const findBestSkill = (playerSkills: any) => {
   return bestName;
 };
 
-const SkillBar = ({ value, max }: { value: number; max: number }) => {
-  const percentage = Math.min((value / max) * 100, 100);
-  return (
-    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" style={{ backgroundColor: 'var(--primary)' }} />
-    </div>
-  );
-};
-
 const Leaderboard = () => {
   const [expandedPlayer, setExpandedPlayer] = useState<number | null>(null);
   const [players, setPlayers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [debugError, setDebugError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev/");
-        const data = await response.json();
-        
-        // Ensure data is sorted by total points
-        const sorted = Array.isArray(data) 
-          ? data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills))
-          : [];
-          
-        setPlayers(sorted);
-      } catch (error) {
-        console.error("Failed to fetch warriors:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchLeaderboard();
+    console.log("Fetching from Worker...");
+    fetch("https://fis-api.saifbinaqeel154.workers.dev/")
+      .then(res => res.json())
+      .then(data => {
+        console.log("Data received:", data);
+        if (Array.isArray(data)) {
+          const sorted = data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills));
+          setPlayers(sorted);
+        } else {
+          setDebugError("Data is not an array");
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Fetch Error:", err);
+        setDebugError(err.message);
+        setLoading(false);
+      });
   }, []);
 
+  if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center">LOADING WARRIORS...</div>;
+  if (debugError) return <div className="min-h-screen bg-black text-red-500 flex items-center justify-center">ERROR: {debugError}</div>;
+
   return (
-    <section className="py-20 px-4 bg-[#0a0a0a] min-h-screen font-display text-center text-white">
+    <section className="py-20 px-4 bg-[#0a0a0a] min-h-screen text-white font-sans">
       <div className="container mx-auto max-w-5xl">
         
-        <div className="text-center mb-12">
-          <div className="flex flex-col items-center justify-center gap-4 mb-2">
-            <img src={fispvpLogo} alt="Logo" className="w-14 h-14 rounded-xl border border-white/10" />
-            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase">
-              FISPVP <span className="text-primary text-glow" style={{ color: 'var(--primary)' }}>LEADERBOARD</span>
-            </h1>
+        <div className="flex flex-col items-center mb-12">
+          <img src={LOGO_URL} className="w-16 h-16 rounded-full border-2 border-purple-500 mb-4" alt="logo" />
+          <h1 className="text-5xl font-black italic tracking-tighter uppercase text-center">
+            FISPVP <span className="text-purple-500">LEADERBOARD</span>
+          </h1>
+        </div>
+
+        <div className="bg-[#111111] rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-2 px-8 py-4 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <div className="col-span-1">Rank</div>
+            <div className="col-span-4">Player</div>
+            <div className="col-span-2 text-center">Points</div>
+            <div className="col-span-2 text-center">Wins</div>
+            <div className="col-span-3 text-center">Best At</div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-12 gap-2 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground border-b border-white/5 bg-white/[0.02] rounded-t-2xl">
-          <div className="col-span-1 text-center">Rank</div>
-          <div className="col-span-4 text-left px-4">Player</div>
-          <div className="col-span-2 text-center flex items-center justify-center gap-1"><Zap className="w-3 h-3 text-primary" /> Points</div>
-          <div className="col-span-2 text-center flex items-center justify-center gap-1"><Trophy className="w-3 h-3" /> Wins</div>
-          <div className="col-span-3 text-center flex items-center justify-center gap-1"><Globe className="w-3 h-3" /> Best At</div>
-        </div>
-
-        <div className="bg-[#111111] rounded-b-2xl border border-white/5 divide-y divide-white/5 overflow-hidden shadow-2xl">
-          {isLoading ? (
-            <div className="py-20 text-muted-foreground animate-pulse">CONNECTING TO DATABASE...</div>
-          ) : players.length === 0 ? (
-            <div className="py-20 text-muted-foreground italic">NO WARRIORS FOUND IN THE DATABASE</div>
-          ) : (
-            players.map((player, index) => (
-              <div key={index} className="group">
-                <div
-                  onClick={() => setExpandedPlayer(expandedPlayer === index ? null : index)}
-                  className={`grid grid-cols-12 gap-2 px-8 py-6 items-center cursor-pointer transition-all duration-300 hover:bg-white/[0.04] ${expandedPlayer === index ? 'bg-primary/5 border-l-4 border-primary' : 'border-l-4 border-transparent'}`}
-                >
-                  <div className="col-span-1 text-center font-black italic text-lg text-gray-500">#{index + 1}</div>
-                  
-                  <div className="col-span-4 flex items-center gap-4 text-left">
-                    <img 
-                      src={`https://mc-heads.net/avatar/${player.mcName || player.name}/100`} 
-                      className="w-10 h-10 rounded shadow-lg border border-white/10" 
-                      alt="face" 
-                    />
-                    <span className="font-bold text-lg tracking-tight">{player.name}</span>
-                  </div>
-
-                  <div className="col-span-2 text-center font-black text-xl text-primary text-glow italic" style={{ color: 'var(--primary)' }}>
-                    {calculateTotalPoints(player.skills).toLocaleString()}
-                  </div>
-                  <div className="col-span-2 text-center font-bold text-gray-400">{player.wins || 0}</div>
-                  <div className="col-span-3 text-center text-sm font-medium text-muted-foreground uppercase tracking-widest group-hover:text-white">
-                    {findBestSkill(player.skills)}
-                  </div>
+          {/* Player List */}
+          {players.map((player, index) => (
+            <div key={index} className="border-t border-white/5">
+              <div 
+                onClick={() => setExpandedPlayer(expandedPlayer === index ? null : index)}
+                className="grid grid-cols-12 gap-2 px-8 py-6 items-center cursor-pointer hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="col-span-1 font-black text-gray-600">#{index + 1}</div>
+                <div className="col-span-4 flex items-center gap-3">
+                  <img src={`https://mc-heads.net/avatar/${player.mcName}/100`} className="w-10 h-10 rounded" alt="skin" />
+                  <span className="font-bold text-lg">{player.name}</span>
                 </div>
-
-                <AnimatePresence>
-                  {expandedPlayer === index && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-black/50 border-t border-white/5">
-                      <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div className="flex flex-col items-center justify-center p-6 bg-white/[0.03] rounded-3xl border border-white/5">
-                           <img 
-                             src={`https://mc-heads.net/body/${player.mcName || player.name}/right`} 
-                             className="h-80 object-contain drop-shadow-[0_0_20px_rgba(255,0,255,0.2)]" 
-                             alt="3d-skin" 
-                           />
-                           <h3 className="mt-4 text-primary font-black italic text-2xl uppercase tracking-tighter" style={{ color: 'var(--primary)' }}>{player.name}</h3>
-                        </div>
-
-                        <div className="space-y-4 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar text-left">
-                           {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
-                             const scores = player.skills?.[key] || [];
-                             const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: any) => a + (Number(b) || 0), 0) : 0;
-                             
-                             return (
-                               <div key={key} className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                 <div className="flex justify-between items-center mb-3">
-                                   <div className="flex items-center gap-2">
-                                     <cat.icon className="w-4 h-4 text-primary" style={{ color: 'var(--primary)' }} />
-                                     <span className="text-xs font-black uppercase tracking-widest">{cat.label}</span>
-                                   </div>
-                                   <span className="text-[10px] font-black text-primary" style={{ color: 'var(--primary)' }}>{catTotal}/{cat.total}</span>
-                                 </div>
-                                 <div className="space-y-2">
-                                   {cat.skills.map((s, i) => {
-                                     const score = Number(scores[i]) || 0;
-                                     return (
-                                       <div key={s.name}>
-                                         <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
-                                           <span>{s.name}</span>
-                                           <span>{score}/{s.max}</span>
-                                         </div>
-                                         <SkillBar value={score} max={s.max} />
-                                       </div>
-                                     );
-                                   })}
-                                 </div>
-                               </div>
-                             );
-                           })}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="col-span-2 text-center font-black text-xl text-purple-400">
+                  {calculateTotalPoints(player.skills)}
+                </div>
+                <div className="col-span-2 text-center text-gray-400">{player.wins || 0}</div>
+                <div className="col-span-3 text-center text-xs uppercase tracking-widest text-gray-500">
+                  {findBestSkill(player.skills)}
+                </div>
               </div>
-            ))
-          )}
+
+              {/* Expansion */}
+              <AnimatePresence>
+                {expandedPlayer === index && (
+                  <motion.div 
+                    initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                    className="overflow-hidden bg-black/40 border-t border-white/5 p-8"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="flex justify-center bg-white/5 rounded-3xl p-6">
+                        <img src={`https://mc-heads.net/body/${player.mcName}/right`} className="h-64 object-contain" alt="body" />
+                      </div>
+                      <div className="space-y-4">
+                        {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
+                          const scores = player.skills?.[key] || [];
+                          return (
+                            <div key={key} className="bg-white/5 p-4 rounded-xl">
+                              <h4 className="text-xs font-black uppercase text-purple-400 mb-2">{cat.label}</h4>
+                              <div className="space-y-2">
+                                {cat.skills.map((s, i) => (
+                                  <div key={s.name} className="flex justify-between text-[10px] uppercase">
+                                    <span className="text-gray-400">{s.name}</span>
+                                    <span className="font-bold">{scores[i] || 0}/{s.max}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
         </div>
       </div>
     </section>
