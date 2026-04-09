@@ -11,7 +11,7 @@ const SKILL_CATEGORIES = {
 
 const emptySkills = {
   weapons: [0, 0, 0, 0, 0, 0, 0],
-  tyrant: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  tyrant: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   survivor: [0, 0, 0, 0, 0],
   mechanics: [0, 0, 0, 0, 0],
 };
@@ -22,16 +22,19 @@ const calculateTotalPoints = (skills: any) => {
 };
 
 const SkillBar = ({ value, max }: { value: number; max: number }) => {
-  const percentage = Math.min((value / max) * 100, 100);
+  const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
       <motion.div 
+        key={value} // Forces re-animation on new search
         initial={{ width: 0 }} 
-        animate={{ width: `${percentage}%` }} 
-        className="h-full bg-primary" 
+        animate={{ width: `${percentage}%` }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="h-full" 
         style={{ 
-          backgroundColor: 'var(--primary)', 
-          boxShadow: '0 0 8px var(--primary)' 
+          backgroundColor: 'var(--primary, #ff00ff)', // Pink fallback if var is missing
+          boxShadow: '0 0 10px var(--primary, #ff00ff)' 
         }} 
       />
     </div>
@@ -50,7 +53,6 @@ const MemberLookup = () => {
       try {
         const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev/");
         const data = await response.json();
-        // Sort to establish ranking order
         const sorted = Array.isArray(data) 
           ? data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills)) 
           : [];
@@ -71,30 +73,21 @@ const MemberLookup = () => {
     );
 
     if (foundIdx !== -1) {
-      setResult({
-        ...allPlayers[foundIdx],
-        rank: foundIdx + 1
-      });
+      setResult({ ...allPlayers[foundIdx], rank: foundIdx + 1 });
       setIsUnknown(false);
     } else {
-      setResult({
-        name: query,
-        mcName: query,
-        rank: "???",
-        skills: emptySkills
-      });
+      setResult({ name: query, mcName: query, rank: "???", skills: emptySkills });
       setIsUnknown(true);
     }
     setSearched(true);
   };
 
   return (
-    <section className="py-24 px-4 bg-[#0a0a0a] min-h-screen text-white text-center">
+    <section className="py-24 px-4 bg-[#0a0a0a] min-h-screen text-white text-center font-display">
       <div className="container mx-auto max-w-5xl">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <h2 className="font-display text-5xl font-black italic uppercase tracking-tighter mb-3">
-            <span className="text-white">CHECK </span>
-            <span className="text-primary text-glow" style={{ color: 'var(--primary)' }}>MEMBER STATS</span>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+          <h2 className="text-5xl font-black italic uppercase tracking-tighter mb-10">
+            CHECK <span className="text-primary text-glow" style={{ color: 'var(--primary)' }}>MEMBER STATS</span>
           </h2>
         </motion.div>
 
@@ -107,10 +100,10 @@ const MemberLookup = () => {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Enter username..."
-              className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/[0.03] border border-white/10 text-white font-display focus:outline-none focus:border-primary transition-all"
+              className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/[0.03] border border-white/10 text-white focus:outline-none focus:border-primary transition-all"
             />
           </div>
-          <button onClick={handleSearch} className="px-8 py-4 rounded-xl bg-primary text-white font-display font-black uppercase tracking-widest hover:scale-105 transition-all" style={{ backgroundColor: 'var(--primary)' }}>
+          <button onClick={handleSearch} className="px-8 py-4 rounded-xl bg-primary text-white font-black uppercase tracking-widest hover:scale-105 transition-all" style={{ backgroundColor: 'var(--primary)' }}>
             SEARCH
           </button>
         </div>
@@ -121,9 +114,9 @@ const MemberLookup = () => {
               <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="flex flex-col items-center justify-center p-6 bg-white/[0.03] rounded-3xl border border-white/5 relative">
                   <img src={`https://mc-heads.net/body/${result.mcName || result.name}/right`} className={`h-80 object-contain drop-shadow-2xl transition-all duration-500 ${isUnknown ? 'grayscale opacity-50' : ''}`} alt="Skin" />
-                  <h3 className={`mt-6 font-black italic text-3xl uppercase tracking-tighter ${isUnknown ? 'text-gray-500' : 'text-white'}`}>{result.name}</h3>
+                  <h3 className="mt-6 font-black italic text-3xl uppercase tracking-tighter" style={{ color: isUnknown ? '#6b7280' : 'var(--primary)' }}>{result.name}</h3>
                   
-                  <div className="grid grid-cols-3 gap-3 w-full mt-6 text-left">
+                  <div className="grid grid-cols-3 gap-3 w-full mt-6">
                     <div className="text-center p-3 bg-white/5 rounded-xl border border-white/5">
                       <p className="text-[9px] text-muted-foreground uppercase font-bold mb-1">Total Points</p>
                       <p className="text-lg font-black italic" style={{ color: 'var(--primary)' }}>{isUnknown ? "0" : calculateTotalPoints(result.skills).toLocaleString()}</p>
@@ -141,16 +134,16 @@ const MemberLookup = () => {
 
                 <div className="space-y-4 max-h-[550px] overflow-y-auto pr-4 custom-scrollbar text-left">
                   {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
-                    const scores = result.skills?.[key] || emptySkills[key as keyof typeof emptySkills];
+                    const scores = result.skills?.[key] || [];
                     const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: any) => a + (Number(b) || 0), 0) : 0;
                     return (
                       <div key={key} className="p-5 bg-white/5 rounded-2xl border border-white/5">
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
-                            <cat.icon className="w-4 h-4 text-primary" style={{ color: !isUnknown ? 'var(--primary)' : '#4b5563' }} />
-                            <span className={`text-xs font-black uppercase tracking-widest ${isUnknown ? 'text-gray-600' : 'text-white'}`}>{cat.label}</span>
+                            <cat.icon className="w-4 h-4" style={{ color: isUnknown ? '#4b5563' : 'var(--primary)' }} />
+                            <span className={`text-xs font-black uppercase tracking-widest ${isUnknown ? 'text-gray-500' : 'text-white'}`}>{cat.label}</span>
                           </div>
-                          <span className="text-[10px] font-black text-primary italic" style={{ color: 'var(--primary)' }}>{catTotal}/{cat.total}</span>
+                          <span className="text-[10px] font-black italic" style={{ color: isUnknown ? '#4b5563' : 'var(--primary)' }}>{catTotal}/{cat.total}</span>
                         </div>
                         <div className="space-y-3">
                           {cat.skills.map((s, i) => {
@@ -175,8 +168,8 @@ const MemberLookup = () => {
               {isUnknown && (
                 <div className="bg-red-950/20 border-t border-red-500/20 p-4 flex items-center justify-center gap-3">
                   <AlertTriangle className="w-4 h-4 text-red-500" />
-                  <p className="text-[10px] font-display font-bold text-red-500 uppercase tracking-[0.2em]">
-                    Warning: These exact results are for an unknown person. Identity not found in Empire Database.
+                  <p className="text-[10px] font-bold text-red-500 uppercase tracking-[0.2em]">
+                    Warning: Identity not found in Database.
                   </p>
                 </div>
               )}
