@@ -3,27 +3,77 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Trophy, Globe, Sword, Shield, Cpu, Wind } from "lucide-react";
 import fispvpLogo from "@/assets/fispvp-logo.jpg";
 
+// This map matches the EXACT order we put in your Worker arrays
 const SKILL_CATEGORIES = {
-  weapons: { label: "Weapons", icon: Sword, skills: [{ name: "Mace", max: 20 }, { name: "Sword", max: 15 }, { name: "Axe", max: 10 }, { name: "Cart", max: 15 }, { name: "Crystals/Anchor", max: 20 }, { name: "Trident", max: 10 }, { name: "Spear", max: 15 }], total: 105 },
-  tyrant: { label: "Tyrant Skill", icon: Shield, skills: [{ name: "Crit Combos", max: 15 }, { name: "Sweep Combo", max: 10 }, { name: "Back Stab", max: 10 }, { name: "Shield Disabling", max: 10 }, { name: "Calmness In Any Situation", max: 10 }, { name: "Attack Cooldown", max: 10 }, { name: "Stun Slam", max: 20 }, { name: "KnockBack Hits", max: 15 }, { name: "Spam Hits (Bedwars)", max: 10 }, { name: "Attribute Swapping", max: 15 }], total: 125 },
-  survivor: { label: "Survivor Skill", icon: Wind, skills: [{ name: "Elytra Swapping", max: 10 }, { name: "Infinite Elytra Flying", max: 15 }, { name: "MLGS (All)", max: 40 }, { name: "Wind Charge Elytra", max: 10 }, { name: "Spear Lunge Escape", max: 15 }], total: 90 },
-  mechanics: { label: "Mechanics Skill", icon: Cpu, skills: [{ name: "Redstone", max: 30 }, { name: "Building", max: 20 }, { name: "Farms", max: 15 }, { name: "Base Game Mechanics", max: 20 }, { name: "F3 Menu", max: 15 }], total: 100 },
+  weapons: { 
+    label: "Weapons", 
+    icon: Sword, 
+    skills: [
+      { name: "Mace", max: 20 },            // Index 0
+      { name: "Sword", max: 15 },           // Index 1
+      { name: "Axe", max: 10 },             // Index 2
+      { name: "Cart", max: 15 },            // Index 3
+      { name: "Crystals/Anchor", max: 20 }, // Index 4
+      { name: "Trident", max: 10 },         // Index 5
+      { name: "Spear", max: 15 }            // Index 6
+    ], 
+    total: 105 
+  },
+  tyrant: { 
+    label: "Tyrant Skill", 
+    icon: Shield, 
+    skills: [
+      { name: "Crit Combos", max: 15 },
+      { name: "Sweep Combo", max: 10 },
+      { name: "Back Stab", max: 10 },
+      { name: "Shield Disabling", max: 10 },
+      { name: "Calmness In Any Situation", max: 10 },
+      { name: "Attack Cooldown", max: 10 },
+      { name: "Stun Slam", max: 20 },
+      { name: "KnockBack Hits", max: 15 },
+      { name: "Spam Hits (Bedwars)", max: 10 },
+      { name: "Attribute Swapping", max: 15 }
+    ], 
+    total: 125 
+  },
+  survivor: { 
+    label: "Survivor Skill", 
+    icon: Wind, 
+    skills: [
+      { name: "Elytra Swapping", max: 10 },
+      { name: "Infinite Elytra Flying", max: 15 },
+      { name: "MLGS (All)", max: 40 },
+      { name: "Wind Charge Elytra", max: 10 },
+      { name: "Spear Lunge Escape", max: 15 }
+    ], 
+    total: 90 
+  },
+  mechanics: { 
+    label: "Mechanics Skill", 
+    icon: Cpu, 
+    skills: [
+      { name: "Redstone", max: 30 },
+      { name: "Building", max: 20 },
+      { name: "Farms", max: 15 },
+      { name: "Base Game Mechanics", max: 20 },
+      { name: "F3 Menu", max: 15 }
+    ], 
+    total: 100 
+  },
 };
 
-// FIXED: Updated to correctly sum nested arrays from the worker
 const calculateTotalPoints = (skills: any) => {
   if (!skills) return 0;
   let total = 0;
   const categories = ['weapons', 'tyrant', 'survivor', 'mechanics'];
   categories.forEach(cat => {
     if (Array.isArray(skills[cat])) {
-      total += skills[cat].reduce((a: number, b: number) => a + (Number(b) || 0), 0);
+      total += skills[cat].reduce((a: number, b: any) => a + (Number(b) || 0), 0);
     }
   });
   return total;
 };
 
-// FIXED: Updated to correctly map best skill from nested arrays
 const findBestSkill = (playerSkills: any) => {
   if (!playerSkills) return "N/A";
   let maxVal = -1;
@@ -32,9 +82,10 @@ const findBestSkill = (playerSkills: any) => {
     const skillsList = SKILL_CATEGORIES[catKey as keyof typeof SKILL_CATEGORIES].skills;
     const scores = playerSkills[catKey];
     if (scores && Array.isArray(scores)) {
-      scores.forEach((val: number, idx: number) => {
-        if (val > maxVal) {
-          maxVal = val;
+      scores.forEach((val: any, idx: number) => {
+        const numVal = Number(val) || 0;
+        if (numVal > maxVal) {
+          maxVal = numVal;
           bestName = skillsList[idx]?.name || "PvP";
         }
       });
@@ -44,7 +95,7 @@ const findBestSkill = (playerSkills: any) => {
 };
 
 const SkillBar = ({ value, max }: { value: number; max: number }) => {
-  const percentage = (value / max) * 100;
+  const percentage = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
       <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" />
@@ -116,7 +167,6 @@ const Leaderboard = () => {
                 >
                   <div className="col-span-1 text-center font-black italic text-lg text-gray-500">#{index + 1}</div>
                   
-                  {/* Player Face + Name */}
                   <div className="col-span-4 flex items-center gap-4 text-left">
                     <img 
                       src={`https://mc-heads.net/avatar/${player.mcName || player.name}/100`} 
@@ -140,7 +190,6 @@ const Leaderboard = () => {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-black/50 border-t border-white/5">
                       <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
                         
-                        {/* Body Image */}
                         <div className="flex flex-col items-center justify-center p-6 bg-white/[0.03] rounded-3xl border border-white/5">
                            <img 
                              src={`https://mc-heads.net/body/${player.mcName || player.name}/right`} 
@@ -153,7 +202,8 @@ const Leaderboard = () => {
                         <div className="space-y-4 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar text-left">
                            {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
                              const scores = (player.skills as any)?.[key] || [];
-                             const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: number) => a + b, 0) : 0;
+                             const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: any) => a + (Number(b) || 0), 0) : 0;
+                             
                              return (
                                <div key={key} className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                  <div className="flex justify-between items-center mb-3">
@@ -164,15 +214,18 @@ const Leaderboard = () => {
                                    <span className="text-[10px] font-black text-primary">{catTotal}/{cat.total}</span>
                                  </div>
                                  <div className="space-y-2">
-                                   {cat.skills.map((s, i) => (
-                                     <div key={s.name}>
-                                       <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
-                                         <span>{s.name}</span>
-                                         <span>{(scores[i] || 0)}/{s.max}</span>
+                                   {cat.skills.map((s, i) => {
+                                     const skillValue = Number(scores[i]) || 0;
+                                     return (
+                                       <div key={s.name}>
+                                         <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
+                                           <span>{s.name}</span>
+                                           <span>{skillValue}/{s.max}</span>
+                                         </div>
+                                         <SkillBar value={skillValue} max={s.max} />
                                        </div>
-                                       <SkillBar value={scores[i] || 0} max={s.max} />
-                                     </div>
-                                   ))}
+                                     );
+                                   })}
                                  </div>
                                </div>
                              );
