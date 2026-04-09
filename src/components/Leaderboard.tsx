@@ -3,63 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Trophy, Globe, Sword, Shield, Cpu, Wind } from "lucide-react";
 import fispvpLogo from "@/assets/fispvp-logo.jpg";
 
-// This map matches the EXACT order we put in your Worker arrays
 const SKILL_CATEGORIES = {
-  weapons: { 
-    label: "Weapons", 
-    icon: Sword, 
-    skills: [
-      { name: "Mace", max: 20 },            // Index 0
-      { name: "Sword", max: 15 },           // Index 1
-      { name: "Axe", max: 10 },             // Index 2
-      { name: "Cart", max: 15 },            // Index 3
-      { name: "Crystals/Anchor", max: 20 }, // Index 4
-      { name: "Trident", max: 10 },         // Index 5
-      { name: "Spear", max: 15 }            // Index 6
-    ], 
-    total: 105 
-  },
-  tyrant: { 
-    label: "Tyrant Skill", 
-    icon: Shield, 
-    skills: [
-      { name: "Crit Combos", max: 15 },
-      { name: "Sweep Combo", max: 10 },
-      { name: "Back Stab", max: 10 },
-      { name: "Shield Disabling", max: 10 },
-      { name: "Calmness In Any Situation", max: 10 },
-      { name: "Attack Cooldown", max: 10 },
-      { name: "Stun Slam", max: 20 },
-      { name: "KnockBack Hits", max: 15 },
-      { name: "Spam Hits (Bedwars)", max: 10 },
-      { name: "Attribute Swapping", max: 15 }
-    ], 
-    total: 125 
-  },
-  survivor: { 
-    label: "Survivor Skill", 
-    icon: Wind, 
-    skills: [
-      { name: "Elytra Swapping", max: 10 },
-      { name: "Infinite Elytra Flying", max: 15 },
-      { name: "MLGS (All)", max: 40 },
-      { name: "Wind Charge Elytra", max: 10 },
-      { name: "Spear Lunge Escape", max: 15 }
-    ], 
-    total: 90 
-  },
-  mechanics: { 
-    label: "Mechanics Skill", 
-    icon: Cpu, 
-    skills: [
-      { name: "Redstone", max: 30 },
-      { name: "Building", max: 20 },
-      { name: "Farms", max: 15 },
-      { name: "Base Game Mechanics", max: 20 },
-      { name: "F3 Menu", max: 15 }
-    ], 
-    total: 100 
-  },
+  weapons: { label: "Weapons", icon: Sword, skills: [{ name: "Mace", max: 20 }, { name: "Sword", max: 15 }, { name: "Axe", max: 10 }, { name: "Cart", max: 15 }, { name: "Crystals/Anchor", max: 20 }, { name: "Trident", max: 10 }, { name: "Spear", max: 15 }], total: 105 },
+  tyrant: { label: "Tyrant Skill", icon: Shield, skills: [{ name: "Crit Combos", max: 15 }, { name: "Sweep Combo", max: 10 }, { name: "Back Stab", max: 10 }, { name: "Shield Disabling", max: 10 }, { name: "Calmness In Any Situation", max: 10 }, { name: "Attack Cooldown", max: 10 }, { name: "Stun Slam", max: 20 }, { name: "KnockBack Hits", max: 15 }, { name: "Spam Hits (Bedwars)", max: 10 }, { name: "Attribute Swapping", max: 15 }], total: 125 },
+  survivor: { label: "Survivor Skill", icon: Wind, skills: [{ name: "Elytra Swapping", max: 10 }, { name: "Infinite Elytra Flying", max: 15 }, { name: "MLGS (All)", max: 40 }, { name: "Wind Charge Elytra", max: 10 }, { name: "Spear Lunge Escape", max: 15 }], total: 90 },
+  mechanics: { label: "Mechanics Skill", icon: Cpu, skills: [{ name: "Redstone", max: 30 }, { name: "Building", max: 20 }, { name: "Farms", max: 15 }, { name: "Base Game Mechanics", max: 20 }, { name: "F3 Menu", max: 15 }], total: 100 },
 };
 
 const calculateTotalPoints = (skills: any) => {
@@ -67,8 +15,9 @@ const calculateTotalPoints = (skills: any) => {
   let total = 0;
   const categories = ['weapons', 'tyrant', 'survivor', 'mechanics'];
   categories.forEach(cat => {
-    if (Array.isArray(skills[cat])) {
-      total += skills[cat].reduce((a: number, b: any) => a + (Number(b) || 0), 0);
+    const catArray = skills[cat];
+    if (Array.isArray(catArray)) {
+      total += catArray.reduce((a: number, b: any) => a + (Number(b) || 0), 0);
     }
   });
   return total;
@@ -79,14 +28,14 @@ const findBestSkill = (playerSkills: any) => {
   let maxVal = -1;
   let bestName = "PvP";
   Object.keys(SKILL_CATEGORIES).forEach((catKey) => {
-    const skillsList = SKILL_CATEGORIES[catKey as keyof typeof SKILL_CATEGORIES].skills;
+    const categoryInfo = SKILL_CATEGORIES[catKey as keyof typeof SKILL_CATEGORIES];
     const scores = playerSkills[catKey];
-    if (scores && Array.isArray(scores)) {
+    if (Array.isArray(scores)) {
       scores.forEach((val: any, idx: number) => {
         const numVal = Number(val) || 0;
         if (numVal > maxVal) {
           maxVal = numVal;
-          bestName = skillsList[idx]?.name || "PvP";
+          bestName = categoryInfo.skills[idx]?.name || "PvP";
         }
       });
     }
@@ -98,7 +47,7 @@ const SkillBar = ({ value, max }: { value: number; max: number }) => {
   const percentage = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-      <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" />
+      <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-primary" style={{ backgroundColor: 'var(--primary)' }} />
     </div>
   );
 };
@@ -113,40 +62,39 @@ const Leaderboard = () => {
       try {
         const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev/");
         const data = await response.json();
-
-        const sortedPlayers = Array.isArray(data) 
+        
+        // Ensure data is sorted by total points
+        const sorted = Array.isArray(data) 
           ? data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills))
           : [];
-
-        setPlayers(sortedPlayers);
+          
+        setPlayers(sorted);
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Failed to fetch warriors:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchLeaderboard();
   }, []);
 
   return (
-    <section className="py-20 px-4 bg-[#0a0a0a] min-h-screen font-display text-center">
+    <section className="py-20 px-4 bg-[#0a0a0a] min-h-screen font-display text-center text-white">
       <div className="container mx-auto max-w-5xl">
         
         <div className="text-center mb-12">
           <div className="flex flex-col items-center justify-center gap-4 mb-2">
-            <img src={fispvpLogo} alt="Logo" className="w-14 h-14 rounded-xl border border-primary/20" />
-            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
-              FISPVP <span className="text-primary text-glow">LEADERBOARD</span>
+            <img src={fispvpLogo} alt="Logo" className="w-14 h-14 rounded-xl border border-white/10" />
+            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase">
+              FISPVP <span className="text-primary text-glow" style={{ color: 'var(--primary)' }}>LEADERBOARD</span>
             </h1>
           </div>
         </div>
 
-        {/* Table Head */}
         <div className="grid grid-cols-12 gap-2 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground border-b border-white/5 bg-white/[0.02] rounded-t-2xl">
           <div className="col-span-1 text-center">Rank</div>
           <div className="col-span-4 text-left px-4">Player</div>
-          <div className="col-span-2 text-center text-primary flex items-center justify-center gap-1"><Zap className="w-3 h-3" /> Points</div>
+          <div className="col-span-2 text-center flex items-center justify-center gap-1"><Zap className="w-3 h-3 text-primary" /> Points</div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1"><Trophy className="w-3 h-3" /> Wins</div>
           <div className="col-span-3 text-center flex items-center justify-center gap-1"><Globe className="w-3 h-3" /> Best At</div>
         </div>
@@ -155,9 +103,7 @@ const Leaderboard = () => {
           {isLoading ? (
             <div className="py-20 text-muted-foreground animate-pulse">CONNECTING TO DATABASE...</div>
           ) : players.length === 0 ? (
-            <div className="py-20 text-muted-foreground italic">
-              NO WARRIORS FOUND IN THE DATABASE
-            </div>
+            <div className="py-20 text-muted-foreground italic">NO WARRIORS FOUND IN THE DATABASE</div>
           ) : (
             players.map((player, index) => (
               <div key={index} className="group">
@@ -173,13 +119,13 @@ const Leaderboard = () => {
                       className="w-10 h-10 rounded shadow-lg border border-white/10" 
                       alt="face" 
                     />
-                    <span className="font-bold text-lg tracking-tight text-white">{player.name}</span>
+                    <span className="font-bold text-lg tracking-tight">{player.name}</span>
                   </div>
 
-                  <div className="col-span-2 text-center font-black text-xl text-primary text-glow italic">
+                  <div className="col-span-2 text-center font-black text-xl text-primary text-glow italic" style={{ color: 'var(--primary)' }}>
                     {calculateTotalPoints(player.skills).toLocaleString()}
                   </div>
-                  <div className="col-span-2 text-center font-bold text-gray-400">{player.wins || "0"}</div>
+                  <div className="col-span-2 text-center font-bold text-gray-400">{player.wins || 0}</div>
                   <div className="col-span-3 text-center text-sm font-medium text-muted-foreground uppercase tracking-widest group-hover:text-white">
                     {findBestSkill(player.skills)}
                   </div>
@@ -189,40 +135,39 @@ const Leaderboard = () => {
                   {expandedPlayer === index && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-black/50 border-t border-white/5">
                       <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-                        
                         <div className="flex flex-col items-center justify-center p-6 bg-white/[0.03] rounded-3xl border border-white/5">
                            <img 
                              src={`https://mc-heads.net/body/${player.mcName || player.name}/right`} 
                              className="h-80 object-contain drop-shadow-[0_0_20px_rgba(255,0,255,0.2)]" 
                              alt="3d-skin" 
                            />
-                           <h3 className="mt-4 text-primary font-black italic text-2xl uppercase tracking-tighter">{player.name}</h3>
+                           <h3 className="mt-4 text-primary font-black italic text-2xl uppercase tracking-tighter" style={{ color: 'var(--primary)' }}>{player.name}</h3>
                         </div>
 
                         <div className="space-y-4 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar text-left">
                            {Object.entries(SKILL_CATEGORIES).map(([key, cat]) => {
-                             const scores = (player.skills as any)?.[key] || [];
+                             const scores = player.skills?.[key] || [];
                              const catTotal = Array.isArray(scores) ? scores.reduce((a: number, b: any) => a + (Number(b) || 0), 0) : 0;
                              
                              return (
                                <div key={key} className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                  <div className="flex justify-between items-center mb-3">
                                    <div className="flex items-center gap-2">
-                                     <cat.icon className="w-4 h-4 text-primary" />
+                                     <cat.icon className="w-4 h-4 text-primary" style={{ color: 'var(--primary)' }} />
                                      <span className="text-xs font-black uppercase tracking-widest">{cat.label}</span>
                                    </div>
-                                   <span className="text-[10px] font-black text-primary">{catTotal}/{cat.total}</span>
+                                   <span className="text-[10px] font-black text-primary" style={{ color: 'var(--primary)' }}>{catTotal}/{cat.total}</span>
                                  </div>
                                  <div className="space-y-2">
                                    {cat.skills.map((s, i) => {
-                                     const skillValue = Number(scores[i]) || 0;
+                                     const score = Number(scores[i]) || 0;
                                      return (
                                        <div key={s.name}>
                                          <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground mb-1">
                                            <span>{s.name}</span>
-                                           <span>{skillValue}/{s.max}</span>
+                                           <span>{score}/{s.max}</span>
                                          </div>
-                                         <SkillBar value={skillValue} max={s.max} />
+                                         <SkillBar value={score} max={s.max} />
                                        </div>
                                      );
                                    })}
