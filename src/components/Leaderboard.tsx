@@ -10,11 +10,20 @@ const SKILL_CATEGORIES = {
   mechanics: { label: "Mechanics Skill", icon: Cpu, skills: [{ name: "Redstone", max: 30 }, { name: "Building", max: 20 }, { name: "Farms", max: 15 }, { name: "Base Game Mechanics", max: 20 }, { name: "F3 Menu", max: 15 }], total: 100 },
 };
 
+// FIXED: Updated to correctly sum nested arrays from the worker
 const calculateTotalPoints = (skills: any) => {
   if (!skills) return 0;
-  return Object.values(skills).flat().reduce((a: any, b: any) => a + b, 0);
+  let total = 0;
+  const categories = ['weapons', 'tyrant', 'survivor', 'mechanics'];
+  categories.forEach(cat => {
+    if (Array.isArray(skills[cat])) {
+      total += skills[cat].reduce((a: number, b: number) => a + (Number(b) || 0), 0);
+    }
+  });
+  return total;
 };
 
+// FIXED: Updated to correctly map best skill from nested arrays
 const findBestSkill = (playerSkills: any) => {
   if (!playerSkills) return "N/A";
   let maxVal = -1;
@@ -51,12 +60,9 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        // REPLACE THIS URL WITH YOUR CLOUDFLARE WORKER URL
         const response = await fetch("https://fis-api.saifbinaqeel154.workers.dev/");
         const data = await response.json();
 
-        // Convert object to array and sort by total points if necessary
-        // Assuming your scores.json is an array of player objects
         const sortedPlayers = Array.isArray(data) 
           ? data.sort((a, b) => calculateTotalPoints(b.skills) - calculateTotalPoints(a.skills))
           : [];
