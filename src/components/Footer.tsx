@@ -11,7 +11,7 @@ const Footer = () => {
           </span>
         </div>
         <p className="text-xs text-muted-foreground/60 font-body">
-          Powered by The Aura Of King Fis
+          Powered by The Empire Management
         </p>
       </div>
     </footer>
