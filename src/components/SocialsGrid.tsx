@@ -24,7 +24,7 @@ const socials = [
     icon: MessageCircle,
     url: "https://discord.gg/M6bfSgh3sw",
     color: "from-indigo-600 to-indigo-800",
-    label: "Join Server",
+    label: "Join Empire",
   },
   {
     name: "FisPvP Discord",
