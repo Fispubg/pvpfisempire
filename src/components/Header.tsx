@@ -5,7 +5,6 @@ import fisLogo from "@/assets/fis-logo.png";
 
 const navLinks = [
   { label: "Home", href: "https://fisempirecf.pages.dev/", isExternal: true },
-  { label: "Leaderboard", href: "https://pvpfisempire.pages.dev/", isExternal: true },
   { label: "Socials", href: "https://fisempirecf.pages.dev/", isExternal: true },
   // Updated this line to point to your Discord link
   { label: "Apply for Staff", href: "https://discord.gg/M6bfSgh3sw", isExternal: true },
