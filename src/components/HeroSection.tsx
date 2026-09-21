@@ -52,7 +52,7 @@ const HeroSection = () => {
             rel="noopener noreferrer"
             className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-display text-sm font-bold uppercase tracking-wider glow-magenta hover:scale-105 transition-transform duration-200 animate-pulse-glow"
           >
-            Enter FisPvP
+            Enter FisPvP!
           </a>
         </motion.div>
       </div>
