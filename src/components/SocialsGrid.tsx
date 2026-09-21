@@ -4,7 +4,7 @@ import { Youtube, Twitch, MessageCircle, ExternalLink } from "lucide-react";
 const socials = [
   {
     name: "YouTube",
-    description: "Watch PrimeFis content, Hostile Smp and FisPvP updates.",
+    description: "Watch Fis Videos And Entertain Yourself.",
     icon: Youtube,
     url: "https://youtube.com/@trulyfis",
     color: "from-red-600 to-red-800",
