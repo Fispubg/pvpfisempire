@@ -6,7 +6,7 @@ const socials = [
     name: "YouTube",
     description: "Watch PrimeFis content, Hostile Smp and FisPvP updates.",
     icon: Youtube,
-    url: "https://youtube.com/@PrimeFis",
+    url: "https://youtube.com/@trulyfis",
     color: "from-red-600 to-red-800",
     label: "Subscribe",
   },
@@ -14,13 +14,13 @@ const socials = [
     name: "Twitch",
     description: "Catch live streams and stuff.",
     icon: Twitch,
-    url: "https://twitch.tv/PrimeFis",
+    url: "https://twitch.tv/trulyfis",
     color: "from-purple-600 to-purple-800",
     label: "Follow",
   },
   {
     name: "Fis Empire Discord",
-    description: "Join the Empire — chat, compete, and rise through the ranks.",
+    description: "Join the Empire — chat, compete, and make a community together.",
     icon: MessageCircle,
     url: "https://discord.gg/M6bfSgh3sw",
     color: "from-indigo-600 to-indigo-800",
@@ -28,7 +28,7 @@ const socials = [
   },
   {
     name: "FisPvP Discord",
-    description: "The competitive PvP arena — find matches, track stats, and dominate.",
+    description: "The competitive PvP arena — find teams, fight, and dominate.",
     icon: MessageCircle,
     url: "https://discord.gg/zAS2jAbGHy",
     color: "from-fuchsia-600 to-purple-800",
@@ -50,7 +50,7 @@ const SocialsGrid = () => {
             Stay <span className="text-primary text-glow">Connected</span>
           </h2>
           <p className="text-muted-foreground font-body text-lg">
-            Stay up-to-date across all Empire platforms
+            Stay up-to-date across The Fis Network
           </p>
         </motion.div>
 
